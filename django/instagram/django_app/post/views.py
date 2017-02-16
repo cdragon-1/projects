@@ -31,6 +31,7 @@ Post Detail에 댓글작성기능 추가
 
 from django.shortcuts import render, redirect
 
+from post.froms import CommentForm
 from post.models import Post, Comment
 
 
@@ -45,29 +46,43 @@ def post_list(request):
 def post_detail(request, post_id):
     # 인자로 전달된 post_id와 일치하는 id를 가진 Post객체 하나만 조회
     post = Post.objects.get(id=post_id)
+    comment_form = CommentForm()
+
     context = {
         'post': post,
+        'comment_form': comment_form,
     }
     return render(request, 'post/post_detail.html', context)
 
 
 def comment_add(request, post_id):
     if request.method == 'POST':
+        form = CommentForm(data=request.POST)
+        if form.is_valid():
+            content = form.cleaned_data['content']
         # 전달받은 POST데이터에서 'content'값을 할당
-        content = request.POST['content']
+            content = request.POST['content']
         # HttpRequest에는 항상 User정보가 전달된다
-        user = request.user
+            user = request.user
         # URL인자로 전달된 post_id값을 사용
-        post = Post.objects.get(id=post_id)
+            post = Post.objects.get(id=post_id)
 
         # post의 메서드를 사용해서 Comment객체 생성
-        # post.add_comment(user, content)
+            post.add_comment(user, content)
+        return redirect('post:detail', post_id=post_id)
 
         # Comment객체를 만들어준다
-        Comment.objects.create(
-            author=user,
-            post=post,
-            content=content
-        )
+        # Comment.objects.create(
+        #     author=user,
+        #     post=post,
+        #     content=content
+        # )
         # 다시 해당하는 post_detail로 리다이렉트
+
+def post_like_toggle(request, post_id):
+    if request.method == 'POST':
+        post = Post.objects.get(id=post_id)
+        post.toggle_like(user=request.user)
         return redirect('post:detail', post_id=post_id)
+
+

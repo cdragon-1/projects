@@ -3,7 +3,7 @@
 {% block content %}
 	{% for post in posts %}
 		{{ post.id }} | {{ post.author.username }}<br>
-		<img src="{{ MEDIA_URL }}{{ post.photo }}"><br>
+		<a href="{% url 'post:detail' post_id=post.id %}"<img src="{{ MEDIA_URL }}{{ post.photo }}"></a><br>
 		{{ post.content|linebreaksbr|truncatechars:100 }}
 		<hr>
 		{% if post.comment_set.all %}
